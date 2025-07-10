@@ -4,7 +4,7 @@ Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en
 
 ## 📥 Téléchargement direct
 
-**[⬇️ Télécharger PDF Hayder v1.00](https://github.com/[USERNAME]/Pdf_Hayder/raw/main/Pdf_Hayder.html)**
+**[⬇️ Télécharger PDF Hayder v1.00](https://github.com/APBureauEtude/Pdf_Hayder/archive/refs/heads/main.zip)**
 
 *Cliquez sur le lien ci-dessus pour télécharger le fichier HTML*
 
