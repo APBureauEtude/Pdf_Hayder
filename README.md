@@ -2,6 +2,14 @@
 
 Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en un seul document, avec gestion automatique des fichiers protégés.
 
+## 📥 Téléchargement direct
+
+**[⬇️ Télécharger PDF Hayder v1.00](Pdf_Hayder.html)**
+
+*Ouvrez ce lien dans votre navigateur pour utiliser l'application directement*
+
+---
+
 ![Interface principale de PDF Hayder](pictures/2.png)
 
 ## ✨ Fonctionnalités
