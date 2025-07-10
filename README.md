@@ -2,6 +2,8 @@
 
 Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en un seul document, avec gestion automatique des fichiers protégés.
 
+![Interface principale de PDF Hayder](pictures/2.png)
+
 ## ✨ Fonctionnalités
 
 - **Interface moderne avec thème sombre** et design responsive
@@ -15,7 +17,7 @@ Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en
 - **Téléchargement automatique** du fichier fusionné
 - **Résumé détaillé** des opérations effectuées
 - **Fonctionne hors ligne** - aucun serveur requis
-- **Version v1.00** avec numéro de version affiché
+
 
 ## 🌍 Langues supportées
 
@@ -23,6 +25,8 @@ Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en
 - **🇹🇷 Turc** (traduction complète)
 
 Le switch de langue se trouve en haut à droite de l'interface.
+
+![Switch de langue](pictures/1.png)
 
 ## 🚀 Comment utiliser
 
@@ -56,6 +60,8 @@ L'application inclut une console de debug intégrée :
 - **Informations de traitement** : méthodes utilisées, pages traitées, erreurs
 - **Diagnostic en temps réel** pour identifier les problèmes
 
+<!-- ![Console de debug](pictures/debug-console.png) -->
+
 ## 🔧 Compatibilité
 
 - **Systèmes d'exploitation** : Windows, macOS, Linux
@@ -84,6 +90,8 @@ L'application dispose d'une interface moderne avec :
 - Boutons avec effets visuels
 - Console de debug intégrée
 - Switch de langue avec drapeaux
+
+<!-- ![Interface responsive](pictures/responsive-design.png) -->
 
 ## 🛠️ Technologies utilisées
 
