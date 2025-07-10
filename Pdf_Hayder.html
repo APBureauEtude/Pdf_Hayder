@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusionneur PDF - Version Finale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e1e2e;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid #2d2d3f;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d2d3f 0%, #1e1e2e 100%);
+            color: #e2e8f0;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #3a3a4f;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+            background: #1e1e2e;
+            color: #e2e8f0;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #2d2d3f;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            border: 1px solid #3a3a4f;
+        }
+
+        .file-item:hover {
+            background: #3a3a4f;
+            transform: translateX(5px);
+            border-color: #4f46e5;
+        }
+
+        .file-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #a1a1aa;
+            font-size: 0.9em;
+        }
+
+        .file-status {
+            font-size: 0.8em;
+            margin-top: 3px;
+        }
+
+        .file-status.success {
+            color: #28a745;
+        }
+
+        .file-status.error {
+            color: #dc3545;
+        }
+
+        .file-status.warning {
+            color: #ffc107;
+        }
+
+        .file-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .file-remove:hover {
+            background: #c82333;
+        }
+
+        .merge-button {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .merge-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
+        }
+
+        .merge-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .download-button {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: none;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .progress {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #2d2d3f;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 1px solid #3a3a4f;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status {
+            color: #a1a1aa;
+            font-style: italic;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        .warning {
+            color: #ffc107;
+        }
+
+        .info {
+            color: #007bff;
+        }
+
+        .summary {
+            background: #2d2d3f;
+            border: 1px solid #3a3a4f;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .summary h3 {
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+
+        .summary-item {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #3a3a4f;
+            color: #a1a1aa;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .debug-console {
+            background: #1a1a1a;
+            border: 1px solid #3a3a4f;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            display: none;
+        }
+
+        .debug-console h3 {
+            color: #e2e8f0;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .debug-log {
+            color: #a1a1aa;
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .debug-log.info {
+            color: #60a5fa;
+        }
+
+        .debug-log.success {
+            color: #34d399;
+        }
+
+        .debug-log.warning {
+            color: #fbbf24;
+        }
+
+        .debug-log.error {
+            color: #f87171;
+        }
+
+        .debug-toggle {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .debug-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(107, 114, 128, 0.3);
+        }
+
+        .language-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(45, 45, 63, 0.8);
+            padding: 8px 15px;
+            border-radius: 25px;
+            border: 1px solid #3a3a4f;
+            backdrop-filter: blur(10px);
+        }
+
+        .language-flag {
+            width: 24px;
+            height: 16px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 0.6;
+        }
+
+        .language-flag:hover {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        .language-flag.active {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .language-flag.fr {
+            background: linear-gradient(90deg, #002395 0%, #002395 33%, #ffffff 33%, #ffffff 66%, #ed2939 66%, #ed2939 100%);
+        }
+
+        .language-flag.tr {
+            background: linear-gradient(90deg, #e30a17 0%, #e30a17 50%, #ffffff 50%, #ffffff 100%);
+            position: relative;
+        }
+
+        .language-flag.tr::after {
+            content: "☪";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8px;
+            color: #e30a17;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="language-switch">
+                <div class="language-flag fr active" onclick="pdfMergerFinal.switchLanguage('fr')" title="Français"></div>
+                <div class="language-flag tr" onclick="pdfMergerFinal.switchLanguage('tr')" title="Türkçe"></div>
+            </div>
+            <h1 id="title">🔄 PDF Hayder</h1>
+            <p id="subtitle">Fusionnez vos fichiers PDF en gérant automatiquement les fichiers protégés</p>
+            <p style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">Version v1.00</p>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf" multiple>
+                    <label for="fileInput" class="file-input-button" id="fileInputLabel">
+                        📁 Sélectionner des fichiers PDF
+                    </label>
+                </div>
+                <p style="color: #a1a1aa; margin-top: 10px;" id="fileInputDescription">
+                    Les fichiers protégés par mot de passe seront automatiquement gérés
+                </p>
+            </div>
+
+            <div class="file-list" id="fileList">
+                <!-- Les fichiers sélectionnés apparaîtront ici -->
+            </div>
+
+            <button class="merge-button" id="mergeButton" disabled>
+                <span id="mergeButtonText">🔗 Fusionner les PDF sélectionnés</span>
+            </button>
+
+            <button class="download-button" id="downloadButton">
+                <span id="downloadButtonText">📥 Télécharger le fichier fusionné</span>
+            </button>
+
+            <div class="progress" id="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status" id="status">Préparation...</div>
+            </div>
+
+            <div class="summary" id="summary">
+                <h3 id="summaryTitle">📊 Résumé de la fusion</h3>
+                <div id="summaryContent">
+                    <!-- Le résumé apparaîtra ici -->
+                </div>
+            </div>
+
+            <button class="debug-toggle" id="debugToggle" onclick="pdfMergerFinal.toggleDebug()">
+                <span id="debugToggleText">🐛 Console Debug</span>
+            </button>
+
+            <div class="debug-console" id="debugConsole">
+                <h3 id="debugConsoleTitle">🔍 Console de Debug</h3>
+                <div id="debugContent">
+                    <!-- Les logs de debug apparaîtront ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script>
+        class PDFMergerFinal {
+            constructor() {
+                this.files = [];
+                this.mergedPdfBlob = null;
+                this.mergedPdfUrl = null;
+                this.processedFiles = [];
+                this.failedFiles = [];
+                this.currentLanguage = 'fr';
+                this.translations = {
+                    fr: {
+                        title: "🔄 PDF Hayder",
+                        subtitle: "Fusionnez vos fichiers PDF en gérant automatiquement les fichiers protégés",
+                        fileInputLabel: "📁 Sélectionner des fichiers PDF",
+                        fileInputDescription: "Les fichiers protégés par mot de passe seront automatiquement gérés",
+                        mergeButtonText: "🔗 Fusionner les PDF sélectionnés",
+                        downloadButtonText: "📥 Télécharger le fichier fusionné",
+                        summaryTitle: "📊 Résumé de la fusion",
+                        debugToggleText: "🐛 Console Debug",
+                        debugConsoleTitle: "🔍 Console de Debug",
+                        status: {
+                            preparation: "Préparation...",
+                            processing: "Traitement de {file}...",
+                            generating: "Génération du fichier final...",
+                            completed: "Fusion terminée ! {processed} fichier(s) traité(s), {failed} échec(s).",
+                            downloadReady: "Téléchargement en cours...",
+                            downloadComplete: "Téléchargement terminé !",
+                            noFileToDownload: "Aucun fichier à télécharger. Fusionnez d'abord vos PDF.",
+                            error: "Erreur lors de la fusion: {error}",
+                            noFilesSelected: "Veuillez sélectionner au moins un fichier PDF.",
+                            pdfLibError: "Erreur: PDF-lib n'est pas disponible. Vérifiez votre connexion internet.",
+                            noValidFiles: "Aucun fichier PDF valide n'a pu être traité"
+                        },
+                        summary: {
+                            processedFiles: "✅ Fichiers traités avec succès:",
+                            failedFiles: "❌ Fichiers en échec:",
+                            totalPages: "📄 Pages totales:",
+                            untreatedFiles: "⚠️ Fichiers non traités:"
+                        },
+                        debug: {
+                            initialized: "PDF Hayder v1.00 initialisé",
+                            fileSelection: "Sélection de fichiers détectée",
+                            pdfAdded: "PDF ajouté: {name} ({size})",
+                            ignoredFile: "Fichier ignoré (non-PDF): {name}",
+                            mergeStart: "Début de la fusion de {count} fichier(s)",
+                            processingFile: "Traitement du fichier {current}/{total}: {name}",
+                            fileSuccess: "{name} traité avec succès ({pages} pages, méthode: {method})",
+                            mergeComplete: "Fusion terminée: {processed} succès, {failed} échecs",
+                            debugEnabled: "Console de debug activée"
+                        }
+                    },
+                    tr: {
+                        title: "🔄 PDF Hayder",
+                        subtitle: "PDF dosyalarınızı korumalı dosyaları otomatik olarak yöneterek birleştirin",
+                        fileInputLabel: "📁 PDF dosyalarını seçin",
+                        fileInputDescription: "Şifre korumalı dosyalar otomatik olarak yönetilecektir",
+                        mergeButtonText: "🔗 Seçili PDF'leri birleştir",
+                        downloadButtonText: "📥 Birleştirilmiş dosyayı indir",
+                        summaryTitle: "📊 Birleştirme özeti",
+                        debugToggleText: "🐛 Debug Konsolu",
+                        debugConsoleTitle: "🔍 Debug Konsolu",
+                        status: {
+                            preparation: "Hazırlanıyor...",
+                            processing: "{file} işleniyor...",
+                            generating: "Final dosya oluşturuluyor...",
+                            completed: "Birleştirme tamamlandı! {processed} dosya işlendi, {failed} başarısız.",
+                            downloadReady: "İndirme başlıyor...",
+                            downloadComplete: "İndirme tamamlandı!",
+                            noFileToDownload: "İndirilecek dosya yok. Önce PDF'lerinizi birleştirin.",
+                            error: "Birleştirme sırasında hata: {error}",
+                            noFilesSelected: "Lütfen en az bir PDF dosyası seçin.",
+                            pdfLibError: "Hata: PDF-lib mevcut değil. İnternet bağlantınızı kontrol edin.",
+                            noValidFiles: "Hiçbir geçerli PDF dosyası işlenemedi"
+                        },
+                        summary: {
+                            processedFiles: "✅ Başarıyla işlenen dosyalar:",
+                            failedFiles: "❌ Başarısız dosyalar:",
+                            totalPages: "📄 Toplam sayfa:",
+                            untreatedFiles: "⚠️ İşlenmeyen dosyalar:"
+                        },
+                        debug: {
+                            initialized: "PDF Hayder v1.00 başlatıldı",
+                            fileSelection: "Dosya seçimi algılandı",
+                            pdfAdded: "PDF eklendi: {name} ({size})",
+                            ignoredFile: "Yok sayılan dosya (PDF değil): {name}",
+                            mergeStart: "{count} dosyanın birleştirilmesi başlıyor",
+                            processingFile: "Dosya işleniyor {current}/{total}: {name}",
+                            fileSuccess: "{name} başarıyla işlendi ({pages} sayfa, yöntem: {method})",
+                            mergeComplete: "Birleştirme tamamlandı: {processed} başarılı, {failed} başarısız",
+                            debugEnabled: "Debug konsolu etkinleştirildi"
+                        }
+                    }
+                };
+                this.init();
+            }
+
+            init() {
+                this.fileInput = document.getElementById('fileInput');
+                this.fileList = document.getElementById('fileList');
+                this.mergeButton = document.getElementById('mergeButton');
+                this.downloadButton = document.getElementById('downloadButton');
+                this.progress = document.getElementById('progress');
+                this.progressFill = document.getElementById('progressFill');
+                this.status = document.getElementById('status');
+                this.summary = document.getElementById('summary');
+                this.summaryContent = document.getElementById('summaryContent');
+                this.debugConsole = document.getElementById('debugConsole');
+                this.debugContent = document.getElementById('debugContent');
+
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                this.mergeButton.addEventListener('click', () => this.mergePDFs());
+                this.downloadButton.addEventListener('click', () => this.downloadFile());
+                
+                this.checkPDFLib();
+                this.logDebug('info', this.getText('debug.initialized'));
+            }
+
+            checkPDFLib() {
+                setTimeout(() => {
+                    if (typeof PDFLib === 'undefined') {
+                        this.status.textContent = 'Erreur: PDF-lib n\'est pas disponible. Vérifiez votre connexion internet.';
+                        this.status.className = 'status error';
+                    }
+                }, 1000);
+            }
+
+            handleFileSelect(event) {
+                const files = Array.from(event.target.files);
+                
+                this.downloadButton.style.display = 'none';
+                this.summary.style.display = 'none';
+                this.mergedPdfBlob = null;
+                this.mergedPdfUrl = null;
+                this.processedFiles = [];
+                this.failedFiles = [];
+                
+                this.logDebug('info', this.getText('debug.fileSelection'));
+                
+                files.forEach(file => {
+                    if (file.type === 'application/pdf') {
+                        this.files.push({
+                            file: file,
+                            name: file.name,
+                            size: this.formatFileSize(file.size),
+                            selected: true,
+                            status: 'pending'
+                        });
+                        this.logDebug('info', this.getText('debug.pdfAdded', { name: file.name, size: this.formatFileSize(file.size) }));
+                    } else {
+                        this.logDebug('warning', this.getText('debug.ignoredFile', { name: file.name }));
+                    }
+                });
+
+                this.logFileSelection(this.files);
+                this.updateFileList();
+                this.updateMergeButton();
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            updateFileList() {
+                this.fileList.innerHTML = '';
+                
+                this.files.forEach((fileObj, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    let statusText = '';
+                    let statusClass = '';
+                    
+                    switch(fileObj.status) {
+                        case 'success':
+                            statusText = '✅ Traité avec succès';
+                            statusClass = 'success';
+                            break;
+                        case 'error':
+                            statusText = '❌ Erreur lors du traitement';
+                            statusClass = 'error';
+                            break;
+                        case 'warning':
+                            statusText = '⚠️ Fichier protégé - ignoré';
+                            statusClass = 'warning';
+                            break;
+                        default:
+                            statusText = '⏳ En attente';
+                            statusClass = '';
+                    }
+                    
+                    fileItem.innerHTML = `
+                        <input type="checkbox" class="file-checkbox" 
+                               ${fileObj.selected ? 'checked' : ''} 
+                               onchange="pdfMergerFinal.toggleFile(${index})">
+                        <div class="file-info">
+                            <div class="file-name">${fileObj.name}</div>
+                            <div class="file-size">${fileObj.size}</div>
+                            <div class="file-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <button class="file-remove" onclick="pdfMergerFinal.removeFile(${index})">
+                            ❌
+                        </button>
+                    `;
+                    
+                    this.fileList.appendChild(fileItem);
+                });
+            }
+
+            toggleFile(index) {
+                this.files[index].selected = !this.files[index].selected;
+                this.updateMergeButton();
+            }
+
+            removeFile(index) {
+                this.files.splice(index, 1);
+                this.updateFileList();
+                this.updateMergeButton();
+            }
+
+            updateMergeButton() {
+                const selectedFiles = this.files.filter(f => f.selected);
+                this.mergeButton.disabled = selectedFiles.length === 0;
+            }
+
+            async mergePDFs() {
+                const selectedFiles = this.files.filter(f => f.selected);
+                
+                if (selectedFiles.length === 0) {
+                    alert('Veuillez sélectionner au moins un fichier PDF.');
+                    return;
+                }
+
+                if (typeof PDFLib === 'undefined') {
+                    alert('Erreur: PDF-lib n\'est pas disponible. Vérifiez votre connexion internet.');
+                    return;
+                }
+
+                this.logDebug('info', this.getText('debug.mergeStart', { count: selectedFiles.length }));
+                this.showProgress();
+                this.status.textContent = 'Initialisation...';
+                this.status.className = 'status';
+
+                try {
+                    const { PDFDocument } = PDFLib;
+                    const mergedPdf = await PDFDocument.create();
+                    let processedCount = 0;
+                    let failedCount = 0;
+
+                                        for (let i = 0; i < selectedFiles.length; i++) {
+                        const fileObj = selectedFiles[i];
+                        this.updateProgress((i / selectedFiles.length) * 100);
+                        this.status.textContent = `Traitement de ${fileObj.name}...`;
+                        
+                        this.logDebug('info', this.getText('debug.processingFile', { 
+                            current: i + 1, 
+                            total: selectedFiles.length, 
+                            name: fileObj.name 
+                        }));
+                        
+                        try {
+                            const arrayBuffer = await fileObj.file.arrayBuffer();
+                            
+                            // Essayer de charger le PDF avec différentes méthodes
+                            let pdf = null;
+                            let loadMethod = 'normal';
+                            
+                            try {
+                                // Méthode 1: Chargement normal
+                                pdf = await PDFDocument.load(arrayBuffer);
+                            } catch (error1) {
+                                try {
+                                    // Méthode 2: Avec ignoreEncryption
+                                    pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+                                    loadMethod = 'ignoreEncryption';
+                                } catch (error2) {
+                                    // Méthode 3: Essayer avec parseSpeedup
+                                    try {
+                                        pdf = await PDFDocument.load(arrayBuffer, { 
+                                            ignoreEncryption: true,
+                                            parseSpeedup: false 
+                                        });
+                                        loadMethod = 'parseSpeedup';
+                                    } catch (error3) {
+                                        // Si toutes les méthodes échouent, marquer comme échec
+                                        throw new Error('Impossible de charger le PDF (probablement protégé par mot de passe)');
+                                    }
+                                }
+                            }
+
+                            if (pdf && pdf.getPageCount() > 0) {
+                                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                                pages.forEach(page => mergedPdf.addPage(page));
+                                
+                                fileObj.status = 'success';
+                                this.processedFiles.push({
+                                    name: fileObj.name,
+                                    pages: pdf.getPageCount(),
+                                    method: loadMethod
+                                });
+                                processedCount++;
+                                
+                                this.logDebug('success', this.getText('debug.fileSuccess', { 
+                                    name: fileObj.name, 
+                                    pages: pdf.getPageCount(), 
+                                    method: loadMethod 
+                                }));
+                            } else {
+                                throw new Error('PDF vide ou invalide');
+                            }
+                            
+                        } catch (fileError) {
+                            console.error(`Erreur avec le fichier ${fileObj.name}:`, fileError);
+                            this.logError(fileError, `traitement de ${fileObj.name}`);
+                            fileObj.status = 'warning';
+                            this.failedFiles.push({
+                                name: fileObj.name,
+                                error: fileError.message
+                            });
+                            failedCount++;
+                        }
+                    }
+
+                    this.updateProgress(100);
+                    this.status.textContent = 'Génération du fichier final...';
+
+                    if (processedCount === 0) {
+                        throw new Error('Aucun fichier PDF valide n\'a pu être traité');
+                    }
+
+                    const mergedPdfBytes = await mergedPdf.save();
+                    
+                    // Créer le blob et l'URL
+                    this.mergedPdfBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                    this.mergedPdfUrl = URL.createObjectURL(this.mergedPdfBlob);
+
+                    // Téléchargement automatique
+                    await this.attemptAutoDownload();
+
+                    this.hideProgress();
+                    this.status.textContent = `Fusion terminée ! ${processedCount} fichier(s) traité(s), ${failedCount} échec(s).`;
+                    this.status.className = 'status success';
+                    
+                    this.logDebug('success', this.getText('debug.mergeComplete', { 
+                        processed: processedCount, 
+                        failed: failedCount 
+                    }));
+                    
+                    // Afficher le résumé
+                    this.showSummary(processedCount, failedCount);
+                    
+                    // Afficher le bouton de téléchargement manuel
+                    this.downloadButton.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        this.status.textContent = '';
+                        this.status.className = 'status';
+                    }, 8000);
+
+                } catch (error) {
+                    console.error('Erreur lors de la fusion:', error);
+                    this.logError(error, 'fusion générale');
+                    this.hideProgress();
+                    this.status.textContent = `Erreur lors de la fusion: ${error.message}`;
+                    this.status.className = 'status error';
+                    
+                    setTimeout(() => {
+                        this.status.textContent = '';
+                        this.status.className = 'status';
+                    }, 5000);
+                }
+            }
+
+            async attemptAutoDownload() {
+                try {
+                    // Méthode 1: Lien direct
+                    const link = document.createElement('a');
+                    link.href = this.mergedPdfUrl;
+                    link.download = 'document_fusionne.pdf';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Méthode 2: Nouvel onglet après délai
+                    setTimeout(() => {
+                        const newWindow = window.open(this.mergedPdfUrl, '_blank');
+                        if (newWindow) {
+                            setTimeout(() => {
+                                newWindow.close();
+                            }, 3000);
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Erreur lors du téléchargement automatique:', error);
+                }
+            }
+
+            showSummary(processedCount, failedCount) {
+                this.summaryContent.innerHTML = `
+                    <div class="summary-item">
+                        <strong>✅ Fichiers traités avec succès:</strong> ${processedCount}
+                    </div>
+                    <div class="summary-item">
+                        <strong>❌ Fichiers en échec:</strong> ${failedCount}
+                    </div>
+                    <div class="summary-item">
+                        <strong>📄 Pages totales:</strong> ${this.processedFiles.reduce((sum, file) => sum + file.pages, 0)}
+                    </div>
+                `;
+                
+                if (this.failedFiles.length > 0) {
+                    this.summaryContent.innerHTML += `
+                        <div class="summary-item">
+                            <strong>⚠️ Fichiers non traités:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                ${this.failedFiles.map(file => `<li>${file.name} - ${file.error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                this.summary.style.display = 'block';
+            }
+
+            downloadFile() {
+                if (this.mergedPdfBlob && this.mergedPdfUrl) {
+                    const link = document.createElement('a');
+                    link.href = this.mergedPdfUrl;
+                    link.download = 'document_fusionne.pdf';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.status.textContent = 'Téléchargement en cours...';
+                    this.status.className = 'status info';
+                    
+                    setTimeout(() => {
+                        this.status.textContent = 'Téléchargement terminé !';
+                        this.status.className = 'status success';
+                        setTimeout(() => {
+                            this.status.textContent = '';
+                            this.status.className = 'status';
+                        }, 2000);
+                    }, 1000);
+                } else {
+                    this.status.textContent = 'Aucun fichier à télécharger. Fusionnez d\'abord vos PDF.';
+                    this.status.className = 'status error';
+                }
+            }
+
+            showProgress() {
+                this.progress.style.display = 'block';
+                this.mergeButton.disabled = true;
+            }
+
+            hideProgress() {
+                this.progress.style.display = 'none';
+                this.mergeButton.disabled = false;
+            }
+
+            updateProgress(percentage) {
+                this.progressFill.style.width = percentage + '%';
+            }
+
+            // Méthodes de debug
+            logDebug(type, message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logElement = document.createElement('div');
+                logElement.className = `debug-log ${type}`;
+                logElement.textContent = `[${timestamp}] ${message}`;
+                
+                this.debugContent.appendChild(logElement);
+                this.debugContent.scrollTop = this.debugContent.scrollHeight;
+                
+                // Limiter le nombre de logs à 50
+                while (this.debugContent.children.length > 50) {
+                    this.debugContent.removeChild(this.debugContent.firstChild);
+                }
+            }
+
+            toggleDebug() {
+                const isVisible = this.debugConsole.style.display === 'block';
+                this.debugConsole.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    this.logDebug('info', this.getText('debug.debugEnabled'));
+                }
+            }
+
+            // Méthodes pour ajouter des logs dans les fonctions existantes
+            logFileSelection(files) {
+                this.logDebug('info', `${files.length} fichier(s) sélectionné(s)`);
+                files.forEach(file => {
+                    this.logDebug('info', `Fichier: ${file.name} (${this.formatFileSize(file.size)})`);
+                });
+            }
+
+            logMergeProgress(current, total) {
+                this.logDebug('info', `Traitement: ${current}/${total} fichiers`);
+            }
+
+            logMergeResult(processed, failed) {
+                this.logDebug('success', `Fusion terminée: ${processed} succès, ${failed} échecs`);
+            }
+
+            logError(error, context) {
+                this.logDebug('error', `Erreur ${context}: ${error.message}`);
+            }
+
+            // Méthodes de traduction
+            switchLanguage(lang) {
+                this.currentLanguage = lang;
+                this.updateLanguageUI();
+                this.updateTranslations();
+                this.logDebug('info', `Langue changée vers: ${lang === 'fr' ? 'Français' : 'Türkçe'}`);
+            }
+
+            updateLanguageUI() {
+                // Mettre à jour les drapeaux
+                document.querySelectorAll('.language-flag').forEach(flag => {
+                    flag.classList.remove('active');
+                });
+                document.querySelector(`.language-flag.${this.currentLanguage}`).classList.add('active');
+            }
+
+            updateTranslations() {
+                const t = this.translations[this.currentLanguage];
+                
+                // Mettre à jour les éléments de l'interface
+                document.getElementById('title').textContent = t.title;
+                document.getElementById('subtitle').textContent = t.subtitle;
+                document.getElementById('fileInputLabel').textContent = t.fileInputLabel;
+                document.getElementById('fileInputDescription').textContent = t.fileInputDescription;
+                document.getElementById('mergeButtonText').textContent = t.mergeButtonText;
+                document.getElementById('downloadButtonText').textContent = t.downloadButtonText;
+                document.getElementById('summaryTitle').textContent = t.summaryTitle;
+                document.getElementById('debugToggleText').textContent = t.debugToggleText;
+                document.getElementById('debugConsoleTitle').textContent = t.debugConsoleTitle;
+            }
+
+            getText(key, params = {}) {
+                const keys = key.split('.');
+                let text = this.translations[this.currentLanguage];
+                
+                for (const k of keys) {
+                    text = text[k];
+                }
+                
+                // Remplacer les paramètres
+                Object.keys(params).forEach(param => {
+                    text = text.replace(`{${param}}`, params[param]);
+                });
+                
+                return text;
+            }
+        }
+
+        // Initialiser l'application
+        const pdfMergerFinal = new PDFMergerFinal();
+    </script>
+</body>
+</html> 

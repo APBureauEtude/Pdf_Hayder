@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusionneur PDF - Version Finale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+
+        .file-input-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .file-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-status {
+            font-size: 0.8em;
+            margin-top: 3px;
+        }
+
+        .file-status.success {
+            color: #28a745;
+        }
+
+        .file-status.error {
+            color: #dc3545;
+        }
+
+        .file-status.warning {
+            color: #ffc107;
+        }
+
+        .file-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .file-remove:hover {
+            background: #c82333;
+        }
+
+        .merge-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .merge-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .merge-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .download-button {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: none;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .progress {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status {
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        .warning {
+            color: #ffc107;
+        }
+
+        .info {
+            color: #007bff;
+        }
+
+        .summary {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .summary h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .summary-item {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Fusionneur PDF - Version Finale</h1>
+            <p>Fusionnez vos fichiers PDF en gérant automatiquement les fichiers protégés</p>
+            <p style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">Version v1.00</p>
+        </div>
+        
+        <div class="content">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf" multiple>
+                    <label for="fileInput" class="file-input-button">
+                        📁 Sélectionner des fichiers PDF
+                    </label>
+                </div>
+                <p style="color: #666; margin-top: 10px;">
+                    Les fichiers protégés par mot de passe seront automatiquement gérés
+                </p>
+            </div>
+
+            <div class="file-list" id="fileList">
+                <!-- Les fichiers sélectionnés apparaîtront ici -->
+            </div>
+
+            <button class="merge-button" id="mergeButton" disabled>
+                🔗 Fusionner les PDF sélectionnés
+            </button>
+
+            <button class="download-button" id="downloadButton">
+                📥 Télécharger le fichier fusionné
+            </button>
+
+            <div class="progress" id="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status" id="status">Préparation...</div>
+            </div>
+
+            <div class="summary" id="summary">
+                <h3>📊 Résumé de la fusion</h3>
+                <div id="summaryContent">
+                    <!-- Le résumé apparaîtra ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script>
+        class PDFMergerFinal {
+            constructor() {
+                this.files = [];
+                this.mergedPdfBlob = null;
+                this.mergedPdfUrl = null;
+                this.processedFiles = [];
+                this.failedFiles = [];
+                this.init();
+            }
+
+            init() {
+                this.fileInput = document.getElementById('fileInput');
+                this.fileList = document.getElementById('fileList');
+                this.mergeButton = document.getElementById('mergeButton');
+                this.downloadButton = document.getElementById('downloadButton');
+                this.progress = document.getElementById('progress');
+                this.progressFill = document.getElementById('progressFill');
+                this.status = document.getElementById('status');
+                this.summary = document.getElementById('summary');
+                this.summaryContent = document.getElementById('summaryContent');
+
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                this.mergeButton.addEventListener('click', () => this.mergePDFs());
+                this.downloadButton.addEventListener('click', () => this.downloadFile());
+                
+                this.checkPDFLib();
+            }
+
+            checkPDFLib() {
+                setTimeout(() => {
+                    if (typeof PDFLib === 'undefined') {
+                        this.status.textContent = 'Erreur: PDF-lib n\'est pas disponible. Vérifiez votre connexion internet.';
+                        this.status.className = 'status error';
+                    }
+                }, 1000);
+            }
+
+            handleFileSelect(event) {
+                const files = Array.from(event.target.files);
+                
+                this.downloadButton.style.display = 'none';
+                this.summary.style.display = 'none';
+                this.mergedPdfBlob = null;
+                this.mergedPdfUrl = null;
+                this.processedFiles = [];
+                this.failedFiles = [];
+                
+                files.forEach(file => {
+                    if (file.type === 'application/pdf') {
+                        this.files.push({
+                            file: file,
+                            name: file.name,
+                            size: this.formatFileSize(file.size),
+                            selected: true,
+                            status: 'pending'
+                        });
+                    }
+                });
+
+                this.updateFileList();
+                this.updateMergeButton();
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            updateFileList() {
+                this.fileList.innerHTML = '';
+                
+                this.files.forEach((fileObj, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    let statusText = '';
+                    let statusClass = '';
+                    
+                    switch(fileObj.status) {
+                        case 'success':
+                            statusText = '✅ Traité avec succès';
+                            statusClass = 'success';
+                            break;
+                        case 'error':
+                            statusText = '❌ Erreur lors du traitement';
+                            statusClass = 'error';
+                            break;
+                        case 'warning':
+                            statusText = '⚠️ Fichier protégé - ignoré';
+                            statusClass = 'warning';
+                            break;
+                        default:
+                            statusText = '⏳ En attente';
+                            statusClass = '';
+                    }
+                    
+                    fileItem.innerHTML = `
+                        <input type="checkbox" class="file-checkbox" 
+                               ${fileObj.selected ? 'checked' : ''} 
+                               onchange="pdfMergerFinal.toggleFile(${index})">
+                        <div class="file-info">
+                            <div class="file-name">${fileObj.name}</div>
+                            <div class="file-size">${fileObj.size}</div>
+                            <div class="file-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <button class="file-remove" onclick="pdfMergerFinal.removeFile(${index})">
+                            ❌
+                        </button>
+                    `;
+                    
+                    this.fileList.appendChild(fileItem);
+                });
+            }
+
+            toggleFile(index) {
+                this.files[index].selected = !this.files[index].selected;
+                this.updateMergeButton();
+            }
+
+            removeFile(index) {
+                this.files.splice(index, 1);
+                this.updateFileList();
+                this.updateMergeButton();
+            }
+
+            updateMergeButton() {
+                const selectedFiles = this.files.filter(f => f.selected);
+                this.mergeButton.disabled = selectedFiles.length === 0;
+            }
+
+            async mergePDFs() {
+                const selectedFiles = this.files.filter(f => f.selected);
+                
+                if (selectedFiles.length === 0) {
+                    alert('Veuillez sélectionner au moins un fichier PDF.');
+                    return;
+                }
+
+                if (typeof PDFLib === 'undefined') {
+                    alert('Erreur: PDF-lib n\'est pas disponible. Vérifiez votre connexion internet.');
+                    return;
+                }
+
+                this.showProgress();
+                this.status.textContent = 'Initialisation...';
+                this.status.className = 'status';
+
+                try {
+                    const { PDFDocument } = PDFLib;
+                    const mergedPdf = await PDFDocument.create();
+                    let processedCount = 0;
+                    let failedCount = 0;
+
+                    for (let i = 0; i < selectedFiles.length; i++) {
+                        const fileObj = selectedFiles[i];
+                        this.updateProgress((i / selectedFiles.length) * 100);
+                        this.status.textContent = `Traitement de ${fileObj.name}...`;
+
+                        try {
+                            const arrayBuffer = await fileObj.file.arrayBuffer();
+                            
+                            // Essayer de charger le PDF avec différentes méthodes
+                            let pdf = null;
+                            let loadMethod = 'normal';
+                            
+                            try {
+                                // Méthode 1: Chargement normal
+                                pdf = await PDFDocument.load(arrayBuffer);
+                            } catch (error1) {
+                                try {
+                                    // Méthode 2: Avec ignoreEncryption
+                                    pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+                                    loadMethod = 'ignoreEncryption';
+                                } catch (error2) {
+                                    // Méthode 3: Essayer avec parseSpeedup
+                                    try {
+                                        pdf = await PDFDocument.load(arrayBuffer, { 
+                                            ignoreEncryption: true,
+                                            parseSpeedup: false 
+                                        });
+                                        loadMethod = 'parseSpeedup';
+                                    } catch (error3) {
+                                        // Si toutes les méthodes échouent, marquer comme échec
+                                        throw new Error('Impossible de charger le PDF (probablement protégé par mot de passe)');
+                                    }
+                                }
+                            }
+
+                            if (pdf && pdf.getPageCount() > 0) {
+                                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                                pages.forEach(page => mergedPdf.addPage(page));
+                                
+                                fileObj.status = 'success';
+                                this.processedFiles.push({
+                                    name: fileObj.name,
+                                    pages: pdf.getPageCount(),
+                                    method: loadMethod
+                                });
+                                processedCount++;
+                            } else {
+                                throw new Error('PDF vide ou invalide');
+                            }
+                            
+                        } catch (fileError) {
+                            console.error(`Erreur avec le fichier ${fileObj.name}:`, fileError);
+                            fileObj.status = 'warning';
+                            this.failedFiles.push({
+                                name: fileObj.name,
+                                error: fileError.message
+                            });
+                            failedCount++;
+                        }
+                    }
+
+                    this.updateProgress(100);
+                    this.status.textContent = 'Génération du fichier final...';
+
+                    if (processedCount === 0) {
+                        throw new Error('Aucun fichier PDF valide n\'a pu être traité');
+                    }
+
+                    const mergedPdfBytes = await mergedPdf.save();
+                    
+                    // Créer le blob et l'URL
+                    this.mergedPdfBlob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                    this.mergedPdfUrl = URL.createObjectURL(this.mergedPdfBlob);
+
+                    // Téléchargement automatique
+                    await this.attemptAutoDownload();
+
+                    this.hideProgress();
+                    this.status.textContent = `Fusion terminée ! ${processedCount} fichier(s) traité(s), ${failedCount} échec(s).`;
+                    this.status.className = 'status success';
+                    
+                    // Afficher le résumé
+                    this.showSummary(processedCount, failedCount);
+                    
+                    // Afficher le bouton de téléchargement manuel
+                    this.downloadButton.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        this.status.textContent = '';
+                        this.status.className = 'status';
+                    }, 8000);
+
+                } catch (error) {
+                    console.error('Erreur lors de la fusion:', error);
+                    this.hideProgress();
+                    this.status.textContent = `Erreur lors de la fusion: ${error.message}`;
+                    this.status.className = 'status error';
+                    
+                    setTimeout(() => {
+                        this.status.textContent = '';
+                        this.status.className = 'status';
+                    }, 5000);
+                }
+            }
+
+            async attemptAutoDownload() {
+                try {
+                    // Méthode 1: Lien direct
+                    const link = document.createElement('a');
+                    link.href = this.mergedPdfUrl;
+                    link.download = 'document_fusionne.pdf';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Méthode 2: Nouvel onglet après délai
+                    setTimeout(() => {
+                        const newWindow = window.open(this.mergedPdfUrl, '_blank');
+                        if (newWindow) {
+                            setTimeout(() => {
+                                newWindow.close();
+                            }, 3000);
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Erreur lors du téléchargement automatique:', error);
+                }
+            }
+
+            showSummary(processedCount, failedCount) {
+                this.summaryContent.innerHTML = `
+                    <div class="summary-item">
+                        <strong>✅ Fichiers traités avec succès:</strong> ${processedCount}
+                    </div>
+                    <div class="summary-item">
+                        <strong>❌ Fichiers en échec:</strong> ${failedCount}
+                    </div>
+                    <div class="summary-item">
+                        <strong>📄 Pages totales:</strong> ${this.processedFiles.reduce((sum, file) => sum + file.pages, 0)}
+                    </div>
+                `;
+                
+                if (this.failedFiles.length > 0) {
+                    this.summaryContent.innerHTML += `
+                        <div class="summary-item">
+                            <strong>⚠️ Fichiers non traités:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                ${this.failedFiles.map(file => `<li>${file.name} - ${file.error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                this.summary.style.display = 'block';
+            }
+
+            downloadFile() {
+                if (this.mergedPdfBlob && this.mergedPdfUrl) {
+                    const link = document.createElement('a');
+                    link.href = this.mergedPdfUrl;
+                    link.download = 'document_fusionne.pdf';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.status.textContent = 'Téléchargement en cours...';
+                    this.status.className = 'status info';
+                    
+                    setTimeout(() => {
+                        this.status.textContent = 'Téléchargement terminé !';
+                        this.status.className = 'status success';
+                        setTimeout(() => {
+                            this.status.textContent = '';
+                            this.status.className = 'status';
+                        }, 2000);
+                    }, 1000);
+                } else {
+                    this.status.textContent = 'Aucun fichier à télécharger. Fusionnez d\'abord vos PDF.';
+                    this.status.className = 'status error';
+                }
+            }
+
+            showProgress() {
+                this.progress.style.display = 'block';
+                this.mergeButton.disabled = true;
+            }
+
+            hideProgress() {
+                this.progress.style.display = 'none';
+                this.mergeButton.disabled = false;
+            }
+
+            updateProgress(percentage) {
+                this.progressFill.style.width = percentage + '%';
+            }
+        }
+
+        // Initialiser l'application
+        const pdfMergerFinal = new PDFMergerFinal();
+    </script>
+</body>
+</html> 
