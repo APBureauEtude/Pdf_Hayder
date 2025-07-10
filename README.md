@@ -6,10 +6,6 @@ Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en
 
 **[⬇️ Télécharger PDF Hayder v1.00](https://github.com/APBureauEtude/Pdf_Hayder/archive/refs/heads/main.zip)**
 
-*Cliquez sur le lien ci-dessus pour télécharger le fichier HTML*
-
-**Alternative :** [Ouvrir dans le navigateur](Pdf_Hayder.html) *(pour utiliser directement)*
-
 ---
 
 ![Interface principale de PDF Hayder](pictures/2.png)
@@ -35,8 +31,6 @@ Une application web moderne et avancée pour fusionner plusieurs fichiers PDF en
 - **🇹🇷 Turc** (traduction complète)
 
 Le switch de langue se trouve en haut à droite de l'interface.
-
-![Switch de langue](pictures/1.png)
 
 ## 🚀 Comment utiliser
 
